@@ -21,7 +21,7 @@ pub(crate) enum Commands {
 
 impl Command {
     pub(crate) async fn execute(&self, network: Network) -> Result<()> {
-        let (config_file, _mock) = if let Some(subcommand) = self.command.as_ref() {
+        let (config_file, mock) = if let Some(subcommand) = self.command.as_ref() {
             match subcommand {
                 Commands::Mock { config_file } => (config_file, true),
             }
@@ -32,8 +32,11 @@ impl Command {
         let config = Config::from_toml_file(config_file)?;
 
         if let Some(config) = config.relay {
-            // TODO separate mock and "real" modes
-            Service::from(config, network).run().await;
+            if mock || config.mock {
+                Service::from(config, network).run_mock().await;
+            } else {
+                Service::from(config, network).run().await;
+            }
             Ok(())
         } else {
             Err(anyhow!("missing relay config from file provided"))

@@ -279,6 +279,7 @@ impl BlindedBlockProvider for Relay {
             let mut state = self.state.lock();
             let current_time = get_current_unix_time_in_secs();
             let mut new_registrations = vec![];
+            tracing::info!("Starting Loop to register validators");
             for registration in registrations.iter_mut() {
                 let latest_timestamp = state
                     .validator_preferences

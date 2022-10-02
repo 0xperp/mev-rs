@@ -22,9 +22,9 @@ ethereum-consensus = { git = "https://github.com/ralexstokes/ethereum-consensus"
 beacon-api-client = { git = "https://github.com/ralexstokes/beacon-api-client" }
 
 mev-build-rs = { path = "../mev-build-rs" }
-mev-relay-rs = { path = "../mev-relay-rs" }
 
 [dev-dependencies]
+mev-relay-rs = { path = "../mev-relay-rs" } # only used in the integration tests
 rand = "0.8.5"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 httpmock = "0.6.6"

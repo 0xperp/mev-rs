@@ -67,8 +67,11 @@ async fn test_end_to_end() {
 
     let mut proposers = create_proposers(&mut rng, 4);
 
+    tracing::info!("Creating proposers");
+
     // start mock consensus node
     let validator_mock_server = MockServer::start();
+    let validator_mock_server_port = validator_mock_server.port();
     let balance = 32_000_000_000;
     let validators = proposers
         .iter()
@@ -98,13 +101,22 @@ async fn test_end_to_end() {
     let relay = Relay::from(relay_config, Default::default());
     tokio::spawn(async move { relay.run().await });
 
+    tracing::info!("Starting relay at http://localhost:{}", port);
+    tracing::info!("Relay is pointed at {}", validator_mock_server.url(""));
+
     // start mux server
     let mut config = Config::default();
     config.relays.push(format!("http://127.0.0.1:{port}"));
 
+    tracing::info!("Starting mux server at {}", config.host);
+    tracing::info!("Starting mux server at {}", config.port);
+    tracing::info!("Starting mux server at with {:?}", config.relays);
+
     let mux_port = config.port;
     let service = Service::from(config, Default::default());
     tokio::spawn(async move { service.run().await });
+
+    tracing::info!("Starting mux server at http://localhost:{}", mux_port);
 
     // let other tasks run so servers boot before we proceed
     // NOTE: there are more races amongst the various services as we add more
@@ -117,6 +129,8 @@ async fn test_end_to_end() {
     ));
 
     beacon_node.check_status().await.unwrap();
+
+    tracing::info!("Beacon node is up with status {:?}", beacon_node.check_status().await);
 
     let context = Context::for_mainnet();
     let registrations = proposers
